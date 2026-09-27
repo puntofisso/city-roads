@@ -7,17 +7,19 @@ export default {
   // This used to work, but seems like GitHub no longer allows large website hosting:
   //areaServer: 'https://anvaka.github.io/index-large-cities/data',
   //areaServer: 'http://localhost:8085', // This is un-commented when I develop cache locally
-  // So, using S3
-  areaServer: 'https://d2uf7yjjctyxf.cloudfront.net/nov-02-2020',
+  // So, using S3 (roads only):
+  //areaServer: 'https://d2uf7yjjctyxf.cloudfront.net/nov-02-2020',
+  // Buildings cache: <areaId>.pbf files in the repo's cache/ folder, next to dist/
+  areaServer: '../cache',
 
   getDefaultLineColor() {
-    return tinycolor('rgba(26, 26, 26, 0.8)');
+    return tinycolor('#FFFFFF');
   },
   getLabelColor() {
-    return tinycolor('#161616');
+    return tinycolor('#FFFFFF');
   },
 
   getBackgroundColor() {
-    return tinycolor('#F7F2E8');
+    return tinycolor('#000000');
   }
 }

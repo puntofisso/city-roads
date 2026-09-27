@@ -21,7 +21,6 @@ export default function createScene(canvas) {
   scene.on('append-child', triggerAdd);
   scene.on('remove-child', triggerRemove);
 
-  scene.setClearColor(0xf7/0xff, 0xf2/0xff, 0xe8/0xff, 1.0);
   let camera = scene.getCameraController();
   if (camera.setMoveSpeed) {
     camera.setMoveSpeed(200);
@@ -34,6 +33,8 @@ export default function createScene(canvas) {
   let slowDownZoom = false;
   let layers = [];
   let backgroundColor = config.getBackgroundColor();
+  let clear = backgroundColor.toRgb();
+  scene.setClearColor(clear.r/0xff, clear.g/0xff, clear.b/0xff, clear.a);
 
   listenToEvents();
 

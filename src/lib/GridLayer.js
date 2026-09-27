@@ -1,6 +1,8 @@
 import config from '../config.js';
 import tinycolor from 'tinycolor2';
 import {WireCollection} from 'w-gl';
+import earcut from 'earcut';
+import PolygonCollection from './PolygonCollection.js';
 
 let counter = 0;
 
@@ -14,6 +16,9 @@ export default class GridLayer {
     this._color = color;
     if (this.lines) {
       this.lines.color = toRatioColor(color.toRgb());
+    }
+    if (this.fills) {
+      this.fills.color = toRatioColor(color.toRgb());
     }
     if (this.scene) {
       this.scene.renderFrame();
@@ -35,6 +40,7 @@ export default class GridLayer {
     this._color = config.getDefaultLineColor();
     this.grid = null;
     this.lines = null;
+    this.fills = null;
     this.scene = null;
     this.dx = 0;
     this.dy = 0;
@@ -113,12 +119,39 @@ export default class GridLayer {
     this.lines = lines;
   }
 
+  buildFillsCollection() {
+    if (this.fills) return this.fills;
+
+    let triangles = [];
+    let vertexCount = 0;
+    this.grid.forEachClosedWay(coords => {
+      let indices = earcut(coords);
+      if (indices.length === 0) return;
+      triangles.push(coords, indices);
+      vertexCount += indices.length;
+    });
+
+    let fills = new PolygonCollection(this.scene.getGL(), Math.max(vertexCount, 3));
+    for (let i = 0; i < triangles.length; i += 2) {
+      fills.addTriangles(triangles[i], triangles[i + 1]);
+    }
+    fills.color = toRatioColor(tinycolor(this._color).toRgb());
+    fills.id = this.id + '_fills';
+
+    this.fills = fills;
+  }
+
+  _forEachCollection(callback) {
+    if (this.fills) callback(this.fills);
+    if (this.lines) callback(this.lines);
+  }
+
   destroy() {
     if (!this.scene || !this.lines) return;
 
     // TODO: This should remove the grid layer too. Need to clean up how
     // scene interacts with grid layers.
-    this.scene.removeChild(this.lines);
+    this._forEachCollection(c => this.scene.removeChild(c));
   }
 
   bindToScene(scene) {
@@ -130,9 +163,10 @@ export default class GridLayer {
     if (!this.grid) return;
 
     this.buildLinesCollection();
+    this.buildFillsCollection();
 
     if (this.hidden) return;
-    this.scene.appendChild(this.lines);
+    this._forEachCollection(c => this.scene.appendChild(c));
   }
 
   hide() {
@@ -140,7 +174,7 @@ export default class GridLayer {
     this.hidden = true;
     if (!this.scene || !this.grid) return;
 
-    this.scene.removeChild(this.lines);
+    this._forEachCollection(c => this.scene.removeChild(c));
   }
 
   show() {
@@ -151,14 +185,16 @@ export default class GridLayer {
       return;
     }
 
-    this.scene.appendChild(this.lines);
+    this._forEachCollection(c => this.scene.appendChild(c));
   }
 
   _transferTransform() {
     if (!this.lines) return;
 
-    this.lines.translate([this.dx, this.dy, 0]);
-    this.lines.updateWorldTransform(true);
+    this._forEachCollection(c => {
+      c.translate([this.dx, this.dy, 0]);
+      c.updateWorldTransform(true);
+    });
     if (this.scene) {
       this.scene.renderFrame(true);
     }
