@@ -125,6 +125,32 @@ export default class Grid {
     });
   }
 
+  /**
+   * Calls `callback(coords)` for every closed way (e.g. a building footprint),
+   * where `coords` is a flat [x0, y0, x1, y1, ...] array of projected points
+   * without the repeated closing point.
+   */
+  forEachClosedWay(callback) {
+    let positions = this.nodes;
+    let project = this.getProjector();
+    this.elements.forEach(element => {
+      if (element.type !== 'way') return;
+
+      let nodeIds = element.nodes;
+      let last = nodeIds.length - 1;
+      if (last < 3 || nodeIds[0] !== nodeIds[last]) return;
+
+      let coords = [];
+      for (let index = 0; index < last; ++index) {
+        let node = positions.get(nodeIds[index]);
+        if (!node) continue;
+        let p = project(node);
+        coords.push(p.x, p.y);
+      }
+      if (coords.length >= 6) callback(coords);
+    });
+  }
+
   getProjector() {
     let q = [0, 0]; // reuse to avoid GC.
 

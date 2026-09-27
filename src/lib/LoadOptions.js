@@ -52,8 +52,10 @@ export default class LoadOptions {
     */
     this.projector = undefined;
     this.wayFilter = undefined;
-    this.timeout = 900;
-    this.maxHeapByteSize = 1073741824;
+    // overpass-api.de refuses queries that reserve more (e.g. 900s / 1GB) with
+    // "Dispatcher_Client::request_read_and_idx::timeout"; 512MB is its default.
+    this.timeout = 180;
+    this.maxHeapByteSize = 536870912;
     this.outputMethod = 'skel'; // body
     Object.assign(this, overrides);
   }

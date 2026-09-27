@@ -1,8 +1,8 @@
 <template>
 <div class='find-place' :class='{centered: boxInTheMiddle }'>
   <div v-if='boxInTheMiddle'>
-    <h3 class='site-header'>city roads</h3>
-    <p class='description'>This website renders every single road within a city</p>
+    <h3 class='site-header'>schwartzplan</h3>
+    <p class='description'>display building footprints from Open Street Map</p>
   </div>
   <form v-on:submit.prevent="onSubmit" class='search-box'>
       <input class='query-input' v-model='enteredInput' type='text' placeholder='Enter a city name to start' ref='input'>
@@ -254,7 +254,7 @@ export default {
       // it may take a while to load data. 
       this.restartLoadingMonitor();
       Query.runFromOptions(new LoadOptions({
-        wayFilter: Query.Road,
+        wayFilter: Query.Building,
         areaId: suggestion.areaId,
         bbox: suggestion.bbox
       }), this.generateNewProgressToken())
@@ -368,6 +368,7 @@ h3.site-header {
   font-weight: normal;
   font-size: 32px;
   text-align: center;
+  color: white;
 }
 
 input {
@@ -497,6 +498,7 @@ input {
   padding: 8px;
   margin: 0;
   text-align: center;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .cancel-request {
